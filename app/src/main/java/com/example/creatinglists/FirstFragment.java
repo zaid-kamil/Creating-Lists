@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -57,6 +59,11 @@ public class FirstFragment extends Fragment {
         binding.shoprecyler.setLayoutManager(new LinearLayoutManager(getActivity()));
         ShopAdapter adapter = new ShopAdapter(getActivity(), shoplist, R.layout.row_shop_layout);
         binding.shoprecyler.setAdapter(adapter);
+
+        binding.btnAddShop.setOnClickListener(v3->{
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_FirstFragment_to_addShopFragment);
+        });
 
     }
 

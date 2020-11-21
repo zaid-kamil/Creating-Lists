@@ -1,8 +1,8 @@
 package com.example.creatinglists;
 
 public class ShopModel {
-    String name, address;
-    int rating, category;
+    public String name, address;
+    public int rating, category;
 
     // alt + insert
     // select constructor

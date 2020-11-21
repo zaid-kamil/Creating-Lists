@@ -9,5 +9,18 @@
         android:id="@+id/FirstFragment"
         android:name="com.example.creatinglists.FirstFragment"
         android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first"/>
+        tools:layout="@layout/fragment_first">
+        <action
+            android:id="@+id/action_FirstFragment_to_addShopFragment"
+            app:destination="@id/addShopFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/addShopFragment"
+        android:name="com.example.creatinglists.AddShopFragment"
+        android:label="fragment_add_shop"
+        tools:layout="@layout/fragment_add_shop" >
+        <action
+            android:id="@+id/action_addShopFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+    </fragment>
 </navigation>
