@@ -9,6 +9,11 @@ public class ShopModel {
     // select all field
     // press ok
 
+
+    public ShopModel() {
+        // for firebase
+    }
+
     public ShopModel(String name, String address, int rating, int category) {
         this.name = name;
         this.address = address;

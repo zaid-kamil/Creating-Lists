@@ -2,6 +2,7 @@ package com.example.creatinglists;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.creatinglists.databinding.FragmentFirstBinding;
 import com.example.creatinglists.databinding.RowShopLayoutBinding;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,50 +28,62 @@ import java.util.List;
 public class FirstFragment extends Fragment {
 
     private com.example.creatinglists.databinding.FragmentFirstBinding binding;
+    private FirebaseFirestore fb;
+    private ArrayList<ShopModel> shoplist;
+    private ShopAdapter adapter;
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        // Inflate the layout for this fragment
+        shoplist = new ArrayList<>();
         return inflater.inflate(R.layout.fragment_first, container, false);
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        fb = FirebaseFirestore.getInstance();
 
-        ArrayList<ShopModel> shoplist = new ArrayList<>();
-        shoplist.add(new ShopModel(
-                "Big bazaar",
-                "2nd floor,Saharaganj,lucknow,226001",
-                4,
-                0)
-        );
-        shoplist.add(new ShopModel(
-                "Big bazaar 2",
-                "2nd floor,Saharaganj,\nlucknow,226001",
-                3,
-                1)
-        );
-        shoplist.add(new ShopModel(
-                "Big bazaar 3",
-                "2nd floor,Saharaganj,\nlucknow,\n226001",
-                2,
-                2)
-        );
 
         binding = FragmentFirstBinding.bind(view);
         binding.shoprecyler.setLayoutManager(new LinearLayoutManager(getActivity()));
-        ShopAdapter adapter = new ShopAdapter(getActivity(), shoplist, R.layout.row_shop_layout);
-        binding.shoprecyler.setAdapter(adapter);
-
+        get_data_from_fireStore();
+        updateUI();
         binding.btnAddShop.setOnClickListener(v3->{
             NavHostFragment.findNavController(this)
                     .navigate(R.id.action_FirstFragment_to_addShopFragment);
         });
 
     }
+
+    private void updateUI() {
+        adapter = new ShopAdapter(getActivity(), shoplist, R.layout.row_shop_layout);
+        binding.shoprecyler.setAdapter(adapter);
+
+
+    }
+
+    public void get_data_from_fireStore(){
+        shoplist.clear();
+        fb.collection("shops").get().addOnCompleteListener(task->{
+            if (task.isSuccessful()) {
+                QuerySnapshot result = task.getResult();
+                for (DocumentSnapshot doc : result.getDocuments()) {
+                    shoplist.add(doc.toObject(ShopModel.class));
+                    adapter.notifyDataSetChanged();
+                }
+            }else{
+                String error = task.getException().getMessage();
+                Snackbar.make(binding.textView,error, BaseTransientBottomBar.LENGTH_LONG).show();
+            }
+            binding.pb.setVisibility(View.GONE);
+
+        });
+
+
+    }
+
 
     class ShopAdapter extends RecyclerView.Adapter<Holder> {
 
@@ -91,6 +109,7 @@ public class FirstFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             ShopModel model = shops.get(position);
+            holder.row.container.setTag(model);
             holder.row.tvShopName.setText(model.name);
             holder.row.tvAddr.setText(model.address);
             holder.row.tvRating.setText(String.valueOf(model.rating));
@@ -108,10 +127,12 @@ public class FirstFragment extends Fragment {
             holder.row.imgCategory.setImageResource(img);
         }
 
+
         @Override
         public int getItemCount() {
             return shops.size();
         }
+
     }
 
     class Holder extends RecyclerView.ViewHolder {
@@ -121,6 +142,11 @@ public class FirstFragment extends Fragment {
         public Holder(@NonNull View itemView) {
             super(itemView);
             row = RowShopLayoutBinding.bind(itemView);
+            row.container.setOnClickListener(view -> {
+                ShopModel model = (ShopModel) view.getTag();
+                FirstFragmentDirections.ActionFirstFragmentToDetailFragment nav = FirstFragmentDirections.actionFirstFragmentToDetailFragment(model.name,model.address);
+                NavHostFragment.findNavController(FirstFragment.this).navigate(nav);
+            });
         }
     }
 }
